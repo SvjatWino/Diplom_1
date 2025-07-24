@@ -1,6 +1,12 @@
 import pytest
 from unittest.mock import Mock
 from praktikum_code.burger import Burger
+from data import (
+    bun_prices,
+    ingredient_price_sets,
+    ingredient_reorder_cases,
+    expected_receipt
+)
 
 
 class TestBurger:
@@ -27,11 +33,10 @@ class TestBurger:
         burger.set_buns(mock_bun)
         burger.add_ingredient(mock_ingredient)
         receipt = burger.get_receipt()
-        assert "(==== Test Bun ====)" in receipt
-        assert "= sauce test ingredient =" in receipt.lower()
-        assert "Price: 250.0" in receipt
 
-    @pytest.mark.parametrize("bun_price", [50.0, 100.0, 200.5])
+        assert receipt == expected_receipt
+
+    @pytest.mark.parametrize("bun_price", bun_prices)
     def test_get_price_with_various_buns(self, bun_price, mock_ingredient):
         bun = Mock()
         bun.get_price.return_value = bun_price
@@ -43,11 +48,7 @@ class TestBurger:
         expected_price = bun_price * 2 + mock_ingredient.get_price()
         assert burger.get_price() == expected_price
 
-    @pytest.mark.parametrize("ingredient_prices", [
-        [50.0],
-        [20.0, 30.0],
-        [10.0, 15.0, 25.0]
-    ])
+    @pytest.mark.parametrize("ingredient_prices", ingredient_price_sets)
     def test_get_price_with_various_ingredients(self, mock_bun, ingredient_prices):
         burger = Burger()
         burger.set_buns(mock_bun)
@@ -64,10 +65,7 @@ class TestBurger:
         expected = mock_bun.get_price() * 2 + total_ingredients_price
         assert burger.get_price() == expected
 
-    @pytest.mark.parametrize("ingredients, from_idx, to_idx, expected_order", [
-        (["a", "b", "c"], 2, 0, ["c", "a", "b"]),
-        (["x", "y"], 0, 1, ["y", "x"]),
-    ])
+    @pytest.mark.parametrize("ingredients, from_idx, to_idx, expected_order", ingredient_reorder_cases)
     def test_move_ingredient(self, ingredients, from_idx, to_idx, expected_order, mock_bun):
         burger = Burger()
         burger.set_buns(mock_bun)
